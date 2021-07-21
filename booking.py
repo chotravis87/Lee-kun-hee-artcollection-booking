@@ -28,7 +28,8 @@ class Booking:
         self.pwd = pwd
 
         # Booking Information
-        self.timeout = kwargs.get('timeout', 5)
+        self.login_timeout = kwargs.get('login_timeout', 1200)
+        self.timeout = kwargs.get('timeout', 30)
         self.reservation_time = reservation_time
         self.target = target
         self.adult = kwargs.get('adult', 1)
@@ -45,10 +46,6 @@ class Booking:
                     datetime.time(10, 0) <= datetime.time(self.target.hour, self.target.minute) <= datetime.time(20, 0),\
                 "예약가능시간은 10:00 ~ 17:00입니다. (수, 토요일은 10:00 ~ 20:00)"
 
-        # Install ChromeDriver and prepare webdriver
-        chromedriver_autoinstaller.install()
-        self.driver = webdriver.Chrome()
-
     @property
     def url(self) -> str:
         return 'https://www.museum.go.kr/site/main/reserve/specialhall/form'
@@ -59,14 +56,14 @@ class Booking:
     def login(self) -> None:
         self.driver.get(self.url)
         try:
-            WebDriverWait(self.driver, self.timeout).until(expected_conditions.presence_of_element_located((By.CLASS_NAME, 'btn-lg2')))
+            WebDriverWait(self.driver, self.login_timeout).until(expected_conditions.element_to_be_clickable((By.CLASS_NAME, 'btn-lg2')))
         except TimeoutException:
             raise TimeoutException("로딩 중 오류가 발생했습니다")
         self.driver.find_element(By.ID, 'id').send_keys(self.id)
         self.driver.find_element(By.ID, 'pwd').send_keys(self.pwd)
         self.driver.find_element(By.CLASS_NAME, 'btn-lg2').click()
         try:
-            WebDriverWait(self.driver, self.timeout).until(expected_conditions.presence_of_element_located((By.XPATH, '//span[contains(@class, "ui-datepicker-year")]')))
+            WebDriverWait(self.driver, self.login_timeout).until(expected_conditions.presence_of_element_located((By.XPATH, '//span[contains(@class, "ui-datepicker-year")]')))
         except TimeoutException:
             raise TimeoutException("로그인에 실패하였습니다")
 
@@ -105,9 +102,14 @@ class Booking:
             self.driver.find_element(By.ID, f'min{idx + 2}_3').send_keys(number.split('-')[2])
         self.driver.find_element(By.XPATH, '//a[contains(@onclick, "return reservation")]').click()
         WebDriverWait(self.driver, self.timeout).until(expected_conditions.alert_is_present())
-        # self.driver.switch_to.alert.accept()
+        self.driver.switch_to.alert.accept()
 
     def run(self) -> None:
+        # Install ChromeDriver and prepare webdriver
+        chromedriver_autoinstaller.install()
+        self.driver = webdriver.Chrome()
+
+        # Start
         self.login()
         self.wait_until_time()
         self.refresh()
