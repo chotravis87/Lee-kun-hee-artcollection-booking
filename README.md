@@ -11,11 +11,9 @@
 
 1. `pip3 install -r requirements.txt`
 
-2. `target`폴더에 있는 `template.ini`를 본인에 맞게 변경하시면 됩니다. 혹시 여려명을 동시에 할 경우 `template.ini`파일을 복사해서 각각 변경하시면 됩니다.
+2. `booking.py`를 입맞에 맞게 수정합니다.
 
-3. `booking.py`를 입맞에 맞게 수정합니다.
-
-4. `python3 booking.py`
+3. `python3 booking.py`
 
 ## 사용방법 (고급)
 
